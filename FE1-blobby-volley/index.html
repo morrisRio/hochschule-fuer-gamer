@@ -24,12 +24,11 @@
 				
 				socket.onopen = function (e) {
 					console.log("[open] Connection established");
-					console.log("Sending to server");
-					socket.send("My name is John");
+					socket.send("My name is FE1");
 				};
 
 				socket.onmessage = function (event) {
-					console.log(event);
+					console.log(event.data);
 				};
 
 

@@ -866,9 +866,10 @@ var Keyboard = Control.extend({
 		me.codes[codeArray[1]] = me.setLeft;
 		me.codes[codeArray[2]] = me.setRight;
 		var handleEvent = false;
-		this.downhandler = function(event) {	
-			handleEvent = me.handler(event, true);
-			return handleEvent;
+		this.downhandler = function(event) {
+			// console.log(event);	
+			// handleEvent = me.handler(event, true);
+			// return handleEvent;
 		};
 		this.uphandler = function(event) {	
 			handleEvent = me.handler(event, false);
