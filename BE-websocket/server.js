@@ -14,10 +14,10 @@ wss.on('connection', function connection(ws) {
     ws.on('error', console.error);
 
     ws.on('message', function message(data) {
-        console.log('received: %s', data);
+        console.log(`L${data.toString()}`);
         wss.clients.forEach(function each(client) {
             if (client !== ws && client.readyState === WebSocket.OPEN) {
-                client.send(data.toString())
+                client.send(`L${data.toString()}`)
             }
         });
     });

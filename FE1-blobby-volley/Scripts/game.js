@@ -1,17 +1,28 @@
+let socket = new WebSocket("ws://localhost:8080");
+
+socket.onopen = function (e) {
+	console.log("[open] Connection established");
+	socket.send("My name is FE1");
+};
+
+// socket.onmessage = function (event) {
+// 	console.log(event.data);
+// };
+
 /*
 	(abstract) VirtualObject class
 */
 var VirtualObject = Class.extend({
-	init: function() {
+	init: function () {
 
 	},
-	random: function(min, max) {
+	random: function (min, max) {
 		var d = max - min;
 		return Math.min(Math.floor(Math.random() * d), max - 1) + min;
 	},
-	format: function(str) {
+	format: function (str) {
 
-		for(var i = 1; i < arguments.length; i++)
+		for (var i = 1; i < arguments.length; i++)
 			str = str.replace(new RegExp('\\{' + (i - 1) + '\\}', 'g'), arguments[i]);
 
 		return str;
@@ -21,17 +32,17 @@ var VirtualObject = Class.extend({
 	(abstract) Resources class
 */
 var Resources = Class.extend({
-	init: function(toload) {
+	init: function (toload) {
 		this.toload = toload;
 		this.resources = {};
 	},
-	loaded: function() {
+	loaded: function () {
 		this.toload--;
 	},
-	setResource: function(name, value) {
+	setResource: function (name, value) {
 		this.resources[name] = value;
 	},
-	getResource: function(name) {
+	getResource: function (name) {
 		return this.resources[name];
 	},
 });
@@ -39,14 +50,14 @@ var Resources = Class.extend({
 	ImageResources class for loading images
 */
 var ImageResources = Resources.extend({
-	init: function(directory, list) {
+	init: function (directory, list) {
 		var me = this;
 		me._super(list.length);
 
-		for(var i = 0; i < list.length; i++) {
+		for (var i = 0; i < list.length; i++) {
 			var item = document.createElement('img');
 			item.src = directory + '/' + list[i];
-			item.onload = function() {
+			item.onload = function () {
 				me.loaded();
 			};
 			me.setResource(list[i], item);
@@ -57,7 +68,7 @@ var ImageResources = Resources.extend({
 	Replay class
 */
 var Replay = VirtualObject.extend({
-	init: function(beach, ball, players) {
+	init: function (beach, ball, players) {
 		this.beach = beach;
 		this.ballx = ball.x;
 		this.bally = ball.y;
@@ -66,7 +77,7 @@ var Replay = VirtualObject.extend({
 		this.count = 0;
 		this.contacts = 0;
 
-		for(var i = 0; i < players.length; i++) {
+		for (var i = 0; i < players.length; i++) {
 			this.players.push({
 				color: players[i].color,
 				name: players[i].name,
@@ -75,34 +86,34 @@ var Replay = VirtualObject.extend({
 			});
 		}
 	},
-	addData: function(players) {
+	addData: function (players) {
 		var inputs = [];
 		this.contacts = 0;
 
-		for(var i = 0; i < players.length; i++) {
+		for (var i = 0; i < players.length; i++) {
 			inputs.push(players[i].input.copy());
 			this.contacts += players[i].totalContacts;
 		}
 
 		//Before starting to add data - look if the data is worth saving (no action = not worth)
-		if(this.count === 0) {
+		if (this.count === 0) {
 			var containsData = false;
 
-			for(var i = inputs.length; i--; ) {
-				if(inputs[i]) {
+			for (var i = inputs.length; i--;) {
+				if (inputs[i]) {
 					containsData = true;
 					break;
 				}
 			}
 
-			if(!containsData)
+			if (!containsData)
 				return;
 		}
 
 		this.data.push(inputs);
 		this.count++;
 	},
-	play: function(game, continuation) {
+	play: function (game, continuation) {
 		game.pause();
 		var frames = this.count;
 		var index = 0;
@@ -115,17 +126,17 @@ var Replay = VirtualObject.extend({
 		ball.y = this.bally;
 		var data = this.data;
 
-		for(var i = 0; i < this.players.length; i++) {
+		for (var i = 0; i < this.players.length; i++) {
 			var bot = new ReplayBot(game, game.players[i].container);
 			bot.setIdentity(this.players[i].name, this.players[i].color);
 			replayBots.push(bot);
 		}
 
-		var iv = setInterval(function() {
-			if(index === frames) {
+		var iv = setInterval(function () {
+			if (index === frames) {
 				clearInterval(iv);
 
-				if(continuation)
+				if (continuation)
 					continuation.apply(game);
 
 				game.play();
@@ -134,16 +145,16 @@ var Replay = VirtualObject.extend({
 
 			var input = data[index++];
 
-			for(var i = replayBots.length; i--; ) {
+			for (var i = replayBots.length; i--;) {
 				replayBots[i].steer(input[i]);
 			}
 
-			for(var t = TIME_SLICES; t--; ) {
+			for (var t = TIME_SLICES; t--;) {
 				ball.logic();
 				net.logic();
 
-				for(var i = replayBots.length; i--; ) {
-					replayBots[i].logic();	
+				for (var i = replayBots.length; i--;) {
+					replayBots[i].logic();
 					ball.collision(replayBots[i]);
 				}
 
@@ -153,7 +164,7 @@ var Replay = VirtualObject.extend({
 			view.paint(ball, replayBots);
 		}, LOGIC_STEP / 2);
 	},
-	stop: function(){
+	stop: function () {
 		//TODO
 	}
 });
@@ -161,16 +172,16 @@ var Replay = VirtualObject.extend({
 	(abstract) DrawObject class
 */
 var DrawObject = Class.extend({
-	init: function(x, y, width, height) {
+	init: function (x, y, width, height) {
 		this.setPosition(x || 0, y || 0);
 		this.width = width || 0;
 		this.height = height || 0;
 	},
-	setPosition: function(x, y) {
+	setPosition: function (x, y) {
 		this.x = x;
 		this.y = y;
 	},
-	paint: function() {
+	paint: function () {
 
 	},
 });
@@ -178,7 +189,7 @@ var DrawObject = Class.extend({
 	SettingsObject class
 */
 var SettingsObject = Class.extend({
-	init: function() {
+	init: function () {
 
 	},
 });
@@ -186,7 +197,7 @@ var SettingsObject = Class.extend({
 	(abstract) Field class
 */
 var Field = DrawObject.extend({
-	init: function(dx, width) {
+	init: function (dx, width) {
 		this._super(dx, 0, width, height);
 		this.wh = width / 2;
 		this.hh = height / 2;
@@ -196,10 +207,10 @@ var Field = DrawObject.extend({
 	The class for the big field
 */
 var BigField = Field.extend({
-	init: function() {
+	init: function () {
 		this._super(0, width);
 	},
-	paint: function() {
+	paint: function () {
 		context.strokeStyle = '#cccccc';
 		context.beginPath();
 		context.rect(0, 0, width, height);
@@ -211,7 +222,7 @@ var BigField = Field.extend({
 	The class for a player's field
 */
 var SubField = Field.extend({
-	init: function(index, total) {
+	init: function (index, total) {
 		var w = width / total - NET_WIDTH / 2;
 		this._super((w + NET_WIDTH) * index, w);
 	}
@@ -220,7 +231,7 @@ var SubField = Field.extend({
 	The viewport class
 */
 var ViewPort = DrawObject.extend({
-	init: function(game) {
+	init: function (game) {
 		this._super(0, 0, width, height);
 		this.field = game.field;
 		this.players = game.players;
@@ -232,54 +243,54 @@ var ViewPort = DrawObject.extend({
 		this.timeLeft = 0;
 		this.radius = SETS_WON_RADIUS;
 	},
-	setup: function() {
+	setup: function () {
 		this.sets = 2 * this.game.maxSets - 1;
 		this.factor = 2.5;
 		this.offset = (this.game.maxSets - 1) * this.radius * this.factor;
 		this.shift = 2 * this.radius;
 	},
-	setMessage: function(text, time) {
+	setMessage: function (text, time) {
 		this.message = text.split('\n');
 		this.persistent = !time;
 
-		if(time)
+		if (time)
 			this.timeLeft = time;
 	},
-	clearMessage: function() {
+	clearMessage: function () {
 		this.message = [];
 		this.persistent = false;
 		this.timeLeft = 0;
 	},
-	setBackground: function(beach) {
+	setBackground: function (beach) {
 		this.background = resources.images.getResource(Beaches[beach]);
 		document.getElementById('beach').innerHTML = beach;
 	},
-	paint: function() {
+	paint: function () {
 		context.clearRect(0, 0, width, height);
 		context.drawImage(this.background, 0, 0);
 		this.field.paint();
 		this.net.paint();
 		this.ball.paint();
 
-		for(var i = this.players.length; i--; )
+		for (var i = this.players.length; i--;)
 			this.players[i].paint();
 
-		if(this.ball.getBottom() > height)
+		if (this.ball.getBottom() > height)
 			this.paintCursor(this.ball.x);
 
 		this.paintScore();
 
-		for(var i = this.players.length; i--; )
+		for (var i = this.players.length; i--;)
 			this.players[i].paintPulse();
 
 		this.paintMessage();
 	},
-	paintMessage: function() {
-		if(!this.persistent) {
-			if(!this.timeLeft)
+	paintMessage: function () {
+		if (!this.persistent) {
+			if (!this.timeLeft)
 				return;
-			
-			this.timeLeft--;	
+
+			this.timeLeft--;
 		}
 
 		context.save();
@@ -288,17 +299,17 @@ var ViewPort = DrawObject.extend({
 		context.fillStyle = '#8A2BE2';
 		context.font = '32pt Merge';
 
-		for(var i = 0; i < this.message.length; i++)
+		for (var i = 0; i < this.message.length; i++)
 			context.fillText(this.message[i], 0, i * 50);
 
 		context.restore();
 	},
-	paintScore: function() {
+	paintScore: function () {
 		context.save();
 		context.translate(this.field.wh - this.offset, 30);
 
-		for(var i = 0; i < this.sets; i++) {
-			if(this.game.sets.length > i)
+		for (var i = 0; i < this.sets; i++) {
+			if (this.game.sets.length > i)
 				context.fillStyle = this.game.sets[i].color;
 			else
 				context.fillStyle = '#cccccc';
@@ -319,7 +330,7 @@ var ViewPort = DrawObject.extend({
 		context.fillText(this.players[1].points, 2 * this.offset + this.shift, 15);
 		context.restore();
 	},
-	paintCursor: function(x) {
+	paintCursor: function (x) {
 		context.save();
 		context.translate(x, 10);
 		context.fillStyle = '#000000';
@@ -333,7 +344,7 @@ var ViewPort = DrawObject.extend({
 	}
 });
 var ReplayViewPort = ViewPort.extend({
-	init: function(players, container, net, ball) {
+	init: function (players, container, net, ball) {
 		var pseudo = {
 			players: players,
 			field: container,
@@ -343,14 +354,14 @@ var ReplayViewPort = ViewPort.extend({
 		this._super(pseudo);
 		this.setMessage(Messages.Replay);
 	},
-	setup: function() {},
-	paintScore: function() {}
+	setup: function () { },
+	paintScore: function () { }
 });
 /*
 	(abstract) Figure class
 */
 var Figure = DrawObject.extend({
-	init: function(container, w, h) {
+	init: function (container, w, h) {
 		this.container = container;
 		this._super(0, 0, w, h);
 		this.friction = BALL_REFLECTION;
@@ -359,57 +370,57 @@ var Figure = DrawObject.extend({
 		this.setPositionFromContainerOrigin();
 		this.setVelocity(0, 0);
 	},
-	setPositionFromContainerOrigin: function() {
+	setPositionFromContainerOrigin: function () {
 		var x = this.container.x + this.container.wh;
 		var y = this.hh;
 		this.setPosition(x, y);
 	},
-	getTotalVelocity: function() {
+	getTotalVelocity: function () {
 		return Math.sqrt(this.vx * this.vx + this.vy * this.vy);
 	},
-	setVelocity: function(vx, vy) {
+	setVelocity: function (vx, vy) {
 		this.vx = vx;
 		this.vy = vy;
 	},
-	setPosition: function(x, y) {
+	setPosition: function (x, y) {
 		this.x = x;
 		this.y = y;
 	},
-	getBottom: function() {
+	getBottom: function () {
 		return this.y - this.hh;
 	},
-	getTop: function() {
+	getTop: function () {
 		return this.y + this.hh;
 	},
-	getLeft: function() {
+	getLeft: function () {
 		return this.x - this.wh;
 	},
-	getRight: function() {
+	getRight: function () {
 		return this.x + this.wh;
 	},
-	checkField: function() {
-		if(this.y < this.hh) {
+	checkField: function () {
+		if (this.y < this.hh) {
 			this.y = this.hh;
 			this.vy = 0;
 		}
 
-		if(this.getLeft() < this.container.x) {
+		if (this.getLeft() < this.container.x) {
 			this.vx = 0;
 			this.x = this.container.x + this.wh;
-		} else if(this.getRight() > this.container.x + this.container.width) {
+		} else if (this.getRight() > this.container.x + this.container.width) {
 			this.vx = 0;
 			this.x = this.container.x + this.container.width - this.wh;
 		}
 	},
-	collision: function() {},
-	logic: function() {
+	collision: function () { },
+	logic: function () {
 		this.vy -= ACCELERATION;
 		this.x += this.vx;
 		this.y += this.vy;
 		this.checkField();
 	},
-	paint: function() {},
-	hit: function(dx, dy, ball) {
+	paint: function () { },
+	hit: function (dx, dy, ball) {
 		var distance = dx * dx + dy * dy;
 		var angle = Math.atan2(dy, dx);
 		var v = ball.getTotalVelocity();
@@ -424,23 +435,23 @@ var Figure = DrawObject.extend({
 	The class for the net
 */
 var Net = Figure.extend({
-	init: function(container) {
+	init: function (container) {
 		this._super(container, NET_WIDTH, NET_HEIGHT);
 		this.radius = NET_WIDTH / 2;
 		this.y = NET_HEIGHT;
 		this.originX = this.x;
 		this.friction = 1;
 	},
-	reset: function() {
+	reset: function () {
 		this.x = this.originX;
 		this.vx = 0;
 	},
-	collision: function(ball) {
+	collision: function (ball) {
 		var dx = ball.x - this.x;
 		var dy = ball.y - this.y;
 		var br = ball.radius + this.radius;
 
-		if(dy <= 0) {
+		if (dy <= 0) {
 			var sign = 0;
 
 			if (ball.vx > 0 && dx + br >= 0 && dx <= this.radius)
@@ -448,7 +459,7 @@ var Net = Figure.extend({
 			else if (ball.vx < 0 && dx - br <= 0 && dx + this.radius >= 0)
 				sign = 1;
 
-			if(sign != 0) {
+			if (sign != 0) {
 				this.vx = ball.vx * 5;
 				ball.vx = -ball.vx;
 				ball.vy += sign * ball.omega;
@@ -460,17 +471,17 @@ var Net = Figure.extend({
 		if (Math.sqrt(dx * dx + dy * dy) <= br)
 			this.hit(dx, dy, ball);
 	},
-	hit: function(dx, dy, ball) {
+	hit: function (dx, dy, ball) {
 		this._super(dx, dy, ball);
 		ball.spin(this.vx, this.vy, dx, dy);
 	},
-	logic: function() {
+	logic: function () {
 		this.x += this.vx;
 		this.vx -= (this.x - this.originX);
 		//Damp the force slightly
 		this.vx *= 0.99;
 	},
-	paint: function() {
+	paint: function () {
 		context.save();
 		context.translate(this.originX, this.container.height);
 		var alpha = Math.atan2(this.x - this.originX, this.height);
@@ -493,7 +504,7 @@ var Net = Figure.extend({
 	The class for the ball
 */
 var Ball = Figure.extend({
-	init: function(container) {
+	init: function (container) {
 		this.radius = 48;
 		this.diameter = 2 * this.radius;
 		this._super(container, this.diameter, this.diameter);
@@ -502,11 +513,11 @@ var Ball = Figure.extend({
 		this.sleeping = true;
 		this.dead = false;
 	},
-	setVelocity: function(vx, vy) {
+	setVelocity: function (vx, vy) {
 		this.sleeping = false;
 		this._super(vx, vy);
 	},
-	setServe: function(subfield) {
+	setServe: function (subfield) {
 		var x = subfield.x + subfield.width / 2;
 		var y = BALL_START_HEIGHT;
 		this.sleeping = true;
@@ -517,24 +528,24 @@ var Ball = Figure.extend({
 		this.vy = 0;
 		this.setPosition(x, y);
 	},
-	collision: function(figure) {
-		if(this.dead) {
-			if(figure instanceof Player && (this.x < figure.container.x || this.x > figure.container.x + figure.container.width))
+	collision: function (figure) {
+		if (this.dead) {
+			if (figure instanceof Player && (this.x < figure.container.x || this.x > figure.container.x + figure.container.width))
 				figure.scorePoint();
 
 			return;
 		}
 
-		figure.collision(this);		
+		figure.collision(this);
 	},
-	checkField: function() {
-		if(this.y <= this.radius) {
+	checkField: function () {
+		if (this.y <= this.radius) {
 			this.dead = true;
 			this.y = this.radius;
 		}
 	},
-	logic: function() {
-		if(this.sleeping || this.dead)
+	logic: function () {
+		if (this.sleeping || this.dead)
 			return;
 
 		//First let's check for contact with the boundary
@@ -554,23 +565,23 @@ var Ball = Figure.extend({
 			this.vx += dx;
 			this.vy += dy;
 		}
-		
+
 		//Perform the updates on velocity etc.
 		this.rotation += this.omega;
 		this._super();
 	},
-	changeSpin: function(vx, vy, dx, dy, sign) {
+	changeSpin: function (vx, vy, dx, dy, sign) {
 		var distance = dx * dx + dy * dy;
 		var scalar = (dx * vx + dy * vy) / distance;
 		var svx = vx + sign * dx * scalar;
 		var svy = vy + sign * dy * scalar;
 		this.omega += (svx * dy - svy * dx) / distance;
 	},
-	spin: function(vx, vy, dx, dy) {
+	spin: function (vx, vy, dx, dy) {
 		this.changeSpin(this.vx, this.vy, dx, dy, 1);
 		this.changeSpin(vx, vy, dx, dy, -1);
 	},
-	paint: function() {
+	paint: function () {
 		context.save();
 		context.translate(this.x, this.container.height - this.y);
 		context.rotate(this.rotation);
@@ -582,7 +593,7 @@ var Ball = Figure.extend({
 	The class for a (human) player
 */
 var Player = Figure.extend({
-	init: function(game, container, controls) {
+	init: function (game, container, controls) {
 		this.radius = 48;
 		this.diameter = 2 * this.radius;
 		this._super(container, this.diameter, this.diameter);
@@ -595,8 +606,8 @@ var Player = Figure.extend({
 		this.name = 'Player';
 		this.reset();
 	},
-	addContact: function() {
-		if(!this.isTouching) {
+	addContact: function () {
+		if (!this.isTouching) {
 			this.isTouching = true;
 			this.contacts++;
 			this.totalContacts++;
@@ -605,7 +616,7 @@ var Player = Figure.extend({
 
 		return true;
 	},
-	reset: function() {
+	reset: function () {
 		this.input.reset();
 		this.setVelocity(0, 0);
 		this.setPositionFromContainerOrigin();
@@ -614,30 +625,30 @@ var Player = Figure.extend({
 		this.totalContacts = 0;
 		this.isTouching = false;
 	},
-	scorePoint: function() {
+	scorePoint: function () {
 		this.points++;
 		this.game.setServe(this.container);
 
-		if(this.points >= this.game.maxPoints) {
+		if (this.points >= this.game.maxPoints) {
 			var over = true;
 
-			for(var i = this.game.players.length; i--; ) {
-				if(this.game.players[i] !== this && Math.abs(this.game.players[i].points - this.points) < 2) {
+			for (var i = this.game.players.length; i--;) {
+				if (this.game.players[i] !== this && Math.abs(this.game.players[i].points - this.points) < 2) {
 					over = false;
-					break;	
+					break;
 				}
 			}
 
-			if(over)
+			if (over)
 				return this.game.setWon(this);
 		}
 	},
-	hit: function(dx, dy, ball) {
+	hit: function (dx, dy, ball) {
 		var f = ball.sleeping ? BALL_LAUNCH : BALL_SPEEDUP;
 		this._super(dx, dy, ball);
 		var sv = dx * this.vx + dy * this.vy;
 
-		if(sv > 0) {
+		if (sv > 0) {
 			var vd = f * sv / (dx * dx + dy * dy);
 			ball.vx += dx * vd;
 			ball.vy += dy * vd;
@@ -645,7 +656,7 @@ var Player = Figure.extend({
 
 		ball.spin(this.vx, this.vy, dx, dy);
 	},
-	collision: function(ball) {
+	collision: function (ball) {
 		var dx = ball.x - this.x;
 		var dy = ball.y - this.y;
 		var distance = Math.sqrt(dx * dx + dy * dy);
@@ -662,41 +673,42 @@ var Player = Figure.extend({
 		var dyp = sigma * dy;
 		ball.setPosition(this.x + dxp, this.y + dyp);
 
-		if(this.game.contact(this))
+		if (this.game.contact(this))
 			return;
 
-		if(this.contacts > MAX_CONTACTS) {
+		if (this.contacts > MAX_CONTACTS) {
 			ball.dead = true;
 			return;
 		}
 
 		this.hit(dx, dy, ball);
 	},
-	setIdentity: function(name, color) {
+	setIdentity: function (name, color) {
 		this.name = name;
 		this.color = color;
 	},
-	updatePulse: function() {
+	updatePulse: function () {
 		this.pulses.push(this.pulse);
 
-		if(this.pulses.length > 100)
+		if (this.pulses.length > 100)
 			this.pulses.shift();
 	},
-	steer: function() {
+	steer: function () {
 		this.input.update();
 		this.updatePulse();
 	},
-	logic: function() {
-		if(this.input.left) {
+	logic: function () {
+		// console.log(this.input);
+		if (this.input.left) {
 			this.vx = -this.pulse * MAX_SPEED;
 			this.pulse -= PULSE_RUN_DECREASE;
-		} else if(this.input.right) {
+		} else if (this.input.right) {
 			this.vx = this.pulse * MAX_SPEED;
 			this.pulse -= PULSE_RUN_DECREASE;
 		} else
 			this.vx = 0;
 
-		if(this.y === this.hh && this.input.up) {
+		if (this.y === this.hh && this.input.up) {
 			this.vy = MAX_JUMP + ACCELERATION;
 			this.pulse -= PULSE_JUMP_DECREASE;
 		}
@@ -704,7 +716,7 @@ var Player = Figure.extend({
 		this.pulse = Math.max(Math.min(1, this.pulse + PULSE_RECOVERY), 0.5);
 		this._super();
 	},
-	paint: function() {
+	paint: function () {
 		context.save();
 		context.translate(this.x, this.container.height - this.y);
 		context.fillStyle = this.color;
@@ -714,7 +726,7 @@ var Player = Figure.extend({
 		context.closePath();
 		context.restore();
 	},
-	paintPulse: function() {
+	paintPulse: function () {
 		context.save();
 		context.translate(this.container.x ? this.container.x + this.container.width - 250 : 50, 45);
 		context.fillStyle = 'rgba(150, 150, 150, 0.2)';
@@ -722,7 +734,7 @@ var Player = Figure.extend({
 		context.beginPath();
 		context.moveTo(0, 0);
 
-		for(var i = 0; i < this.pulses.length; i++) {
+		for (var i = 0; i < this.pulses.length; i++) {
 			context.lineTo(2 * i, -30 * (1 / this.pulses[i] - 1));
 		}
 
@@ -740,15 +752,15 @@ var Player = Figure.extend({
 	The class for a (computer) player
 */
 var Computer = Player.extend({
-	init: function(game, container) {
+	init: function (game, container) {
 		this._super(game, container, new Control());
 		this.setIdentity('Computer', '#FF6633');
 	},
-	steer: function() {
+	steer: function () {
 		//TODO perform ai to change input
 		var r = Math.floor(Math.random() * 6);
 
-		switch(r) {
+		switch (r) {
 			case 0:
 				this.input.setUp(true);
 				break;
@@ -776,19 +788,19 @@ var Computer = Player.extend({
 	The class for a (replay) player
 */
 var ReplayBot = Player.extend({
-	init: function(game, container) {
+	init: function (game, container) {
 		this._super(game, container, new Control());
 	},
-	steer: function(data) {
-		if(data) {
+	steer: function (data) {
+		if (data) {
 			this.input.setUp(!!data.u);
 			this.input.setLeft(!!data.l);
 			this.input.setRight(!!data.r);
 		}
-					
+
 		this._super();
 	},
-	scorePoint: function() {
+	scorePoint: function () {
 		//Nothing to do here!
 	}
 });
@@ -796,11 +808,11 @@ var ReplayBot = Player.extend({
 	(abstract) Control class
 */
 var Control = VirtualObject.extend({
-	init: function() {
+	init: function () {
 		this.reset();
 		this._super();
 	},
-	update: function() {
+	update: function () {
 		this.previousUp = this.up;
 		this.previousLeft = this.left;
 		this.previousRight = this.right;
@@ -808,7 +820,7 @@ var Control = VirtualObject.extend({
 		this.up = this.bufferUp;
 		this.right = this.bufferRight;
 	},
-	reset: function() {
+	reset: function () {
 		this.up = false;
 		this.left = false;
 		this.right = false;
@@ -819,32 +831,32 @@ var Control = VirtualObject.extend({
 		this.previousLeft = false;
 		this.previousRight = false;
 	},
-	setUp: function(on) {
+	setUp: function (on) {
 		this.bufferUp = on;
 	},
-	setLeft: function(on) {
+	setLeft: function (on) {
 		this.bufferLeft = on;
 	},
-	setRight: function(on) {
+	setRight: function (on) {
 		this.bufferRight = on;
 	},
-	bind: function() { },
-	unbind: function() { },
-	cancelBubble: function(e) {
-		 var evt = e || event;
+	bind: function () { },
+	unbind: function () { },
+	cancelBubble: function (e) {
+		var evt = e || event;
 
-		 if(evt.preventDefault)
-		 	evt.preventDefault();
-		 else
-		 	evt.returnValue = false;
+		if (evt.preventDefault)
+			evt.preventDefault();
+		else
+			evt.returnValue = false;
 
-		 if (evt.stopPropagation)
-		 	evt.stopPropagation();
-		 else
-		 	evt.cancelBubble = true;
+		if (evt.stopPropagation)
+			evt.stopPropagation();
+		else
+			evt.cancelBubble = true;
 	},
-	copy: function() {
-		if(this.previousUp === this.up && this.previousRight === this.right && this.previousLeft === this.left)
+	copy: function () {
+		if (this.previousUp === this.up && this.previousRight === this.right && this.previousLeft === this.left)
 			return 0;
 
 		return {
@@ -858,43 +870,44 @@ var Control = VirtualObject.extend({
 	The class for controlling the game with the keyboard
 */
 var Keyboard = Control.extend({
-	init: function(codeArray) {
+	init: function (codeArray) {
 		var me = this;
 		me._super();
 		me.codes = {};
 		me.codes[codeArray[0]] = me.setUp;
 		me.codes[codeArray[1]] = me.setLeft;
 		me.codes[codeArray[2]] = me.setRight;
+
 		var handleEvent = false;
-		this.downhandler = function(event) {
-			// console.log(event);	
-			// handleEvent = me.handler(event, true);
-			// return handleEvent;
+		this.downhandler = function (event) {
+			handleEvent = me.handler(event, true);
+			return handleEvent;
 		};
-		this.uphandler = function(event) {	
+		this.uphandler = function (event) {
 			handleEvent = me.handler(event, false);
 			return handleEvent;
 		};
-		this.presshandler = function(event) {	
+		this.presshandler = function (event) {
 			if (!handleEvent)
 				me.cancelBubble(event);
 			return handleEvent;
 		};
-		
-	},	
-	bind: function() {
+
+	},
+	bind: function () {
 		document.addEventListener('keydown', this.downhandler, false);
 		document.addEventListener('keyup', this.uphandler, false);
 		document.addEventListener('keypress', this.presshandler, false);
 		//The last one is required to cancel bubble event in Opera!
 	},
-	unbind: function() {
+	unbind: function () {
 		document.removeEventListener('keydown', this.downhandler, false);
 		document.removeEventListener('keyup', this.uphandler, false);
 		document.removeEventListener('keypress', this.presshandler, false);
 	},
-	handler: function(e, status) {
-		if(this.codes[e.keyCode]) {
+	handler: function (e, status) {
+		if (this.codes[e.keyCode]) {
+			console.log(e);
 			(this.codes[e.keyCode]).apply(this, [status]);
 			this.cancelBubble(e);
 			return false;
@@ -903,11 +916,66 @@ var Keyboard = Control.extend({
 		return true;
 	},
 });
+
+/*
+	The class for controlling the game via websocket
+*/
+var Websocket = Control.extend({
+	init: function (codeArray) {
+		var me = this;
+		me._super();
+		me.codes = {};
+		me.codes[codeArray[0]] = me.setUp;
+		me.codes[codeArray[1]] = me.setLeft;
+		me.codes[codeArray[2]] = me.setRight;
+
+
+		var handleEvent = false;
+		this.websocketHandler = function (event) {
+			
+			let handlerState = event.data.charAt(2);
+			let setDirection = event.data.slice(0,-1);
+			console.log(handlerState, setDirection);
+			if(handlerState == 1)
+				handleEvent = me.handler(setDirection, true);
+			else
+				handleEvent = me.handler(setDirection, false);
+			
+			return handleEvent;
+		};
+	},
+	bind: function () {
+
+		socket.addEventListener('message', this.websocketHandler);
+
+		document.addEventListener('keydown', this.downhandler, false);
+		document.addEventListener('keyup', this.uphandler, false);
+		document.addEventListener('keypress', this.presshandler, false);
+		//The last one is required to cancel bubble event in Opera!
+	},
+	unbind: function () {
+		document.removeEventListener('keydown', this.downhandler, false);
+		document.removeEventListener('keyup', this.uphandler, false);
+		document.removeEventListener('keypress', this.presshandler, false);
+	},
+	handler: function (direction, status) {
+		if (this.codes[direction]) {
+			console.log(direction, status);
+			(this.codes[direction]).apply(this, [status]);
+			// this.cancelBubble(e);
+			return false;
+		}
+
+		return true;
+	},
+});
+
+
 /*
 	The class for controlling the game via touch
 */
 var TouchInput = Control.extend({
-	init: function(container) {
+	init: function (container) {
 		this._super();
 	},
 });
@@ -915,7 +983,7 @@ var TouchInput = Control.extend({
 	The class managing the lobby
 */
 var Lobby = VirtualObject.extend({
-	init: function() {
+	init: function () {
 		this.messages = [];
 		this.created = new Date();
 	},
@@ -924,7 +992,7 @@ var Lobby = VirtualObject.extend({
 	The class for representing an observer
 */
 var Observer = VirtualObject.extend({
-	init: function() {
+	init: function () {
 
 	},
 });
@@ -932,7 +1000,7 @@ var Observer = VirtualObject.extend({
 	The class for the game
 */
 var Game = VirtualObject.extend({
-	init: function() {
+	init: function () {
 		this.ready = false;
 		this.load();
 		this.players = [];
@@ -953,16 +1021,16 @@ var Game = VirtualObject.extend({
 		this.beach = '';
 		this.beaches = [];
 
-		for(var key in Beaches)
+		for (var key in Beaches)
 			this.beaches.push(key);
 	},
-	contact: function(player) {
+	contact: function (player) {
 		var touching = false;
 
-		for(var i = this.players.length; i--; ) {
+		for (var i = this.players.length; i--;) {
 			var gamer = this.players[i];
 
-			if(gamer === player)
+			if (gamer === player)
 				touching = gamer.addContact();
 			else
 				gamer.contacts = 0;
@@ -970,76 +1038,76 @@ var Game = VirtualObject.extend({
 
 		return touching;
 	},
-	reset: function() {
+	reset: function () {
 		var i;
 
-		for(i = this.players.length; i--;)
+		for (i = this.players.length; i--;)
 			this.players.pop();
 
-		for(i = this.observers.length; i--;)
+		for (i = this.observers.length; i--;)
 			this.observers.pop();
 
-		for(i = this.replays.length; i--; )
+		for (i = this.replays.length; i--;)
 			this.replays.pop();
 
-		for(i = this.sets.length; i--; )
+		for (i = this.sets.length; i--;)
 			this.sets.pop();
 	},
-	setWon: function(player) {
-		for(var i = 0; i < this.players.length; i++)
+	setWon: function (player) {
+		for (var i = 0; i < this.players.length; i++)
 			this.players[i].points = 0;
 
 		player.sets++;
 		this.sets.push(player);
 
 
-		if(player.sets === this.maxSets) {
+		if (player.sets === this.maxSets) {
 			this.viewPort.setMessage(this.format(Messages.Over, player.name));
 			this.endMatch();
 		} else {
 			this.viewPort.setMessage(this.format(Messages.Set, player.name), 2 * this.wait);
 		}
 	},
-	addPlayer: function(player) {
+	addPlayer: function (player) {
 		this.players.push(player);
 	},
-	addObserver: function(observer) {
+	addObserver: function (observer) {
 		this.observers.push(observer);
 	},
-	saveReplay: function() {
+	saveReplay: function () {
 		this.replays.push(this.instantReplay);
 	},
-	recordReplay: function() {
+	recordReplay: function () {
 		this.instantReplay = new Replay(this.beach, this.ball, this.players);
 	},
-	detectInstantReplay: function() {
-		if(this.replays.length) {
+	detectInstantReplay: function () {
+		if (this.replays.length) {
 			var rep = this.replays[this.replays.length - 1];
 
-			if(rep.contacts > 8 && rep.count > 220)
+			if (rep.contacts > 8 && rep.count > 220)
 				return true;
 		}
 
 		return false;
 	},
-	playLastReplay: function(continuation) {
-		if(this.replays.length) {
+	playLastReplay: function (continuation) {
+		if (this.replays.length) {
 			this.replays[this.replays.length - 1].play(this, continuation);
 		}
 	},
-	continuation: function() {
+	continuation: function () {
 		this.net.reset();
 
-		for(var i = this.players.length; i--; )
+		for (var i = this.players.length; i--;)
 			this.players[i].reset();
 
 		this.recordReplay();
 	},
-	setServe: function(container) {
+	setServe: function (container) {
 		this.saveReplay();
 		this.ball.setServe(container);
 
-		if(this.detectInstantReplay()) {
+		if (this.detectInstantReplay()) {
 			this.playLastReplay(this.continuation);
 			return;
 		}
@@ -1047,19 +1115,19 @@ var Game = VirtualObject.extend({
 		this.wait = Math.ceil(POINT_BREAK_TIME / LOGIC_STEP);
 		this.continuation();
 	},
-	tick: function() {
-		if(!this.wait) {
-			for(var i = this.players.length; i--; )
+	tick: function () {
+		if (!this.wait) {
+			for (var i = this.players.length; i--;)
 				this.players[i].steer();
 
 			this.instantReplay.addData(this.players);
 
-			for(var t = TIME_SLICES; t--; ) {
+			for (var t = TIME_SLICES; t--;) {
 				this.ball.logic();
 				this.net.logic();
 
-				for(var i = this.players.length; i--; ) {
-					this.players[i].logic();	
+				for (var i = this.players.length; i--;) {
+					this.players[i].logic();
 					this.ball.collision(this.players[i]);
 				}
 
@@ -1071,7 +1139,7 @@ var Game = VirtualObject.extend({
 
 		this.viewPort.paint(this.ball, this.players);
 	},
-	beginMatch: function() {
+	beginMatch: function () {
 		var r = this.random(0, this.beaches.length);
 		this.viewPort.setMessage(Messages.Start, 100);
 		this.beach = this.beaches[r];
@@ -1082,36 +1150,36 @@ var Game = VirtualObject.extend({
 		this.continuation();
 		this.play();
 	},
-	endMatch: function() {
+	endMatch: function () {
 		this.saveReplay();
 		this.viewPort.paint(this.ball, this.players);
 		this.pause();
 	},
-	play: function() {
+	play: function () {
 		var me = this;
 
-		if(!me.running) {
+		if (!me.running) {
 			me.running = true;
 
-			for(var i = this.players.length; i--; )
+			for (var i = this.players.length; i--;)
 				this.players[i].input.bind();
 
-			me.loop = setInterval(function() {
+			me.loop = setInterval(function () {
 				me.tick();
-			}, LOGIC_STEP);	
+			}, LOGIC_STEP);
 		}
 	},
-	pause: function() {
-		if(this.running) {
+	pause: function () {
+		if (this.running) {
 			this.running = false;
 
-			for(var i = this.players.length; i--; )
+			for (var i = this.players.length; i--;)
 				this.players[i].input.unbind();
 
 			clearInterval(this.loop);
 		}
 	},
-	load: function() {
+	load: function () {
 		//TODO - set ready to true AFTER all resources have been loaded
 		this.ready = true;
 		resources.images = new ImageResources('Content/', LOAD_IMAGES);

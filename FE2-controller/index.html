@@ -29,21 +29,21 @@
         height: 100%;
     }
 
-    .controller .left,
-    .controller .right {
+    .controller .l,
+    .controller .r {
         background-color: #aaaaaa;
     }
 
-    .controller .jump {
+    .controller .j {
         background-color: #356e32;
     }
 </style>
 
 <body>
     <div class="controller">
-        <div class="left"></div>
-        <div class="jump"></div>
-        <div class="right"></div>
+        <div class="l"></div>
+        <div class="j"></div>
+        <div class="r"></div>
     </div>
 
     <script async defer>
@@ -60,9 +60,9 @@
                 console.log(`[message] Data received from server: ${event.data}`);
             };
 
-            const leftButton = document.querySelector('div.left');
-            const rightButton = document.querySelector('div.right');
-            const jumpButton = document.querySelector('div.jump');
+            const leftButton = document.querySelector('div.l');
+            const rightButton = document.querySelector('div.r');
+            const jumpButton = document.querySelector('div.j');
 
             let timerID;
             let counter = 0;
@@ -100,29 +100,31 @@
             function pressingDown(e) {
                 // console.log(e);
                 let button = e.target.classList[0]
-                console.log(button);
+                socket.send(`${button}1`);
+                console.log(`${button}1`);
                 requestAnimationFrame(function () {
                     timer(button)
                 })
                 e.preventDefault();
-                console.log("Pressing!");
             }
 
             function notPressingDown(e) {
+                let button = e.target.classList[0]
+                socket.send(`${button}0`);
+                console.log(`${button}0`);
+
                 leftButton.dispatchEvent(pressHoldEvent);
                 cancelAnimationFrame(timerID);
                 counter = 0;
-                // console.log("Not pressing!");
             }
             function timer(button) {
-                socket.send(button);
+                // socket.send(button);
 
                 if (counter < pressHoldDuration) {
                     timerID = requestAnimationFrame(function () {
                         timer(button)
                     })
                 }
-
             }
 
             // function doSomething(e) {
