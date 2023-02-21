@@ -1,4 +1,4 @@
-let socket = new WebSocket("ws://localhost:8080");
+let socket = new WebSocket("wss://hfg-gamer-backend.fly.dev");
 
 socket.onopen = function (e) {
 	console.log("[open] Connection established");
@@ -698,7 +698,7 @@ var Player = Figure.extend({
 		this.updatePulse();
 	},
 	logic: function () {
-		// console.log(this.input);
+		
 		if (this.input.left) {
 			this.vx = -this.pulse * MAX_SPEED;
 			this.pulse -= PULSE_RUN_DECREASE;
@@ -712,6 +712,9 @@ var Player = Figure.extend({
 			this.vy = MAX_JUMP + ACCELERATION;
 			this.pulse -= PULSE_JUMP_DECREASE;
 		}
+
+		if(this.input.up)
+			console.log(this.input.up);
 
 		this.pulse = Math.max(Math.min(1, this.pulse + PULSE_RECOVERY), 0.5);
 		this._super();
@@ -897,19 +900,19 @@ var Keyboard = Control.extend({
 	bind: function () {
 		document.addEventListener('keydown', this.downhandler, false);
 		document.addEventListener('keyup', this.uphandler, false);
-		document.addEventListener('keypress', this.presshandler, false);
+		// document.addEventListener('keypress', this.presshandler, false);
 		//The last one is required to cancel bubble event in Opera!
 	},
 	unbind: function () {
 		document.removeEventListener('keydown', this.downhandler, false);
 		document.removeEventListener('keyup', this.uphandler, false);
-		document.removeEventListener('keypress', this.presshandler, false);
+		// document.removeEventListener('keypress', this.presshandler, false);
 	},
 	handler: function (e, status) {
 		if (this.codes[e.keyCode]) {
-			console.log(e);
+			// console.log(e);
 			(this.codes[e.keyCode]).apply(this, [status]);
-			this.cancelBubble(e);
+			// this.cancelBubble(e);
 			return false;
 		}
 
@@ -932,15 +935,16 @@ var Websocket = Control.extend({
 
 		var handleEvent = false;
 		this.websocketHandler = function (event) {
-			
 			let handlerState = event.data.charAt(2);
-			let setDirection = event.data.slice(0,-1);
-			console.log(handlerState, setDirection);
-			if(handlerState == 1)
+			let setDirection = event.data.slice(0, -1);
+			// console.log(handlerState, setDirection);
+			if (handlerState == 1) {
 				handleEvent = me.handler(setDirection, true);
-			else
+			}
+			else {
 				handleEvent = me.handler(setDirection, false);
-			
+			}
+
 			return handleEvent;
 		};
 	},
@@ -948,19 +952,20 @@ var Websocket = Control.extend({
 
 		socket.addEventListener('message', this.websocketHandler);
 
-		document.addEventListener('keydown', this.downhandler, false);
-		document.addEventListener('keyup', this.uphandler, false);
-		document.addEventListener('keypress', this.presshandler, false);
+		// document.addEventListener('keydown', this.downhandler, false);
+		// document.addEventListener('keyup', this.uphandler, false);
+		// document.addEventListener('keypress', this.presshandler, false);
 		//The last one is required to cancel bubble event in Opera!
 	},
 	unbind: function () {
-		document.removeEventListener('keydown', this.downhandler, false);
-		document.removeEventListener('keyup', this.uphandler, false);
-		document.removeEventListener('keypress', this.presshandler, false);
+		socket.removeEventListener('message', this.websocketHandler);
+		// document.removeEventListener('keydown', this.downhandler, false);
+		// document.removeEventListener('keyup', this.uphandler, false);
+		// document.removeEventListener('keypress', this.presshandler, false);
 	},
 	handler: function (direction, status) {
 		if (this.codes[direction]) {
-			console.log(direction, status);
+			// console.log(direction, status);
 			(this.codes[direction]).apply(this, [status]);
 			// this.cancelBubble(e);
 			return false;

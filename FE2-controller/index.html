@@ -49,7 +49,7 @@
     <script async defer>
         (function () {
             // Create new game
-            let socket = new WebSocket("ws://localhost:8080");
+            let socket = new WebSocket("wss://hfg-gamer-backend.fly.dev");
             socket.onopen = function (e) {
                 console.log("[open] Connection established");
                 console.log("Sending to server");
@@ -77,21 +77,21 @@
             // Listening for the mouse and touch events    
             leftButton.addEventListener("mousedown", pressingDown, false);
             leftButton.addEventListener("mouseup", notPressingDown, false);
-            leftButton.addEventListener("mouseleave", notPressingDown, false);
+            // leftButton.addEventListener("mouseleave", notPressingDown, false); 
             leftButton.addEventListener("touchstart", pressingDown, false);
             leftButton.addEventListener("touchend", notPressingDown, false);
             // leftButton.addEventListener("pressHold", doSomething, false);
 
             rightButton.addEventListener("mousedown", pressingDown, false);
             rightButton.addEventListener("mouseup", notPressingDown, false);
-            rightButton.addEventListener("mouseleave", notPressingDown, false);
+            // rightButton.addEventListener("mouseleave", notPressingDown, false);
             rightButton.addEventListener("touchstart", pressingDown, false);
             rightButton.addEventListener("touchend", notPressingDown, false);
             // rightButton.addEventListener("pressHold", doSomething, false);
 
             jumpButton.addEventListener("mousedown", pressingDown, false);
             jumpButton.addEventListener("mouseup", notPressingDown, false);
-            jumpButton.addEventListener("mouseleave", notPressingDown, false);
+            // jumpButton.addEventListener("mouseleave", notPressingDown, false);
             jumpButton.addEventListener("touchstart", pressingDown, false);
             jumpButton.addEventListener("touchend", notPressingDown, false);
             // jumpButton.addEventListener("pressHold", doSomething, false);
