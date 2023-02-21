@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <title>Ultimate Volley</title>
+    <link rel="stylesheet" href="Content/style.css" />
+</head>
+
+<style>
+    .controller {
+        display: flex;
+        height: 100%;
+        width: 100%;
+    }
+
+    .controller div {
+        width: 33.33333%;
+        height: 100%;
+    }
+
+    .controller .left,
+    .controller .right {
+        background-color: #aaaaaa;
+    }
+
+    .controller .jump {
+        background-color: #356e32;
+    }
+</style>
+
+<body>
+    <div class="controller">
+        <div class="left"></div>
+        <div class="jump"></div>
+        <div class="right"></div>
+    </div>
+
+    <script async defer>
+        (function () {
+            // Create new game
+            let socket = new WebSocket("ws://localhost:8080");
+            socket.onopen = function (e) {
+                console.log("[open] Connection established");
+                console.log("Sending to server");
+                socket.send("My name is John");
+            };
+
+            socket.onmessage = function (event) {
+                console.log(`[message] Data received from server: ${event.data}`);
+            };
+
+            const leftButton = document.querySelector('div.left');
+            const rightButton = document.querySelector('div.right');
+            const jumpButton = document.querySelector('div.jump');
+
+            let timerID;
+            let counter = 0;
+
+            let pressHoldEvent = new CustomEvent("pressHold");
+
+            // Increase or decreae value to adjust how long
+            // one should keep pressing down before the pressHold
+            // event fires
+            let pressHoldDuration = 50;
+
+            // Listening for the mouse and touch events    
+            leftButton.addEventListener("mousedown", pressingDown, false);
+            leftButton.addEventListener("mouseup", notPressingDown, false);
+            leftButton.addEventListener("mouseleave", notPressingDown, false);
+            leftButton.addEventListener("touchstart", pressingDown, false);
+            leftButton.addEventListener("touchend", notPressingDown, false);
+            // leftButton.addEventListener("pressHold", doSomething, false);
+
+            rightButton.addEventListener("mousedown", pressingDown, false);
+            rightButton.addEventListener("mouseup", notPressingDown, false);
+            rightButton.addEventListener("mouseleave", notPressingDown, false);
+            rightButton.addEventListener("touchstart", pressingDown, false);
+            rightButton.addEventListener("touchend", notPressingDown, false);
+            // rightButton.addEventListener("pressHold", doSomething, false);
+
+            jumpButton.addEventListener("mousedown", pressingDown, false);
+            jumpButton.addEventListener("mouseup", notPressingDown, false);
+            jumpButton.addEventListener("mouseleave", notPressingDown, false);
+            jumpButton.addEventListener("touchstart", pressingDown, false);
+            jumpButton.addEventListener("touchend", notPressingDown, false);
+            // jumpButton.addEventListener("pressHold", doSomething, false);
+
+
+            function pressingDown(e) {
+                // console.log(e);
+                let button = e.target.classList[0]
+                console.log(button);
+                requestAnimationFrame(function () {
+                    timer(button)
+                })
+                e.preventDefault();
+                console.log("Pressing!");
+            }
+
+            function notPressingDown(e) {
+                leftButton.dispatchEvent(pressHoldEvent);
+                cancelAnimationFrame(timerID);
+                counter = 0;
+                // console.log("Not pressing!");
+            }
+            function timer(button) {
+                socket.send(button);
+
+                if (counter < pressHoldDuration) {
+                    timerID = requestAnimationFrame(function () {
+                        timer(button)
+                    })
+                }
+
+            }
+
+            // function doSomething(e) {
+            //     console.log("pressHold event fired!");
+            // }
+
+
+
+
+        })();
+    </script>
+</body>
+
+</html>

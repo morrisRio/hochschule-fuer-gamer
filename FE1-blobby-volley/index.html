@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+	<meta charset="utf-8" />
+	<title>Ultimate Volley</title>
+	<link rel="stylesheet" href="Content/style.css" />
+</head>
+
+<body>
+	<div id="beach"></div>
+	<canvas id="canvas" width="1000" height="600">Your browser is too old. Please consider upgrading your
+		browser.</canvas>
+	<script src="Scripts/oop.js" charset="utf-8" async defer></script>
+	<script src="Scripts/constants.js" charset="utf-8" async defer></script>
+	<script src="Scripts/variables.js" charset="utf-8" async defer></script>
+	<script src="Scripts/enums.js" charset="utf-8" async defer></script>
+	<script src="Scripts/game.js" charset="utf-8" async defer></script>
+	<script async defer>
+		(function () {
+			// Create new game
+			setTimeout(() => {
+				let socket = new WebSocket("ws://localhost:8080");
+				
+				socket.onopen = function (e) {
+					console.log("[open] Connection established");
+					console.log("Sending to server");
+					socket.send("My name is John");
+				};
+
+				socket.onmessage = function (event) {
+					console.log(event);
+				};
+
+
+
+				var game = new Game();
+
+				// Create left player
+				var fieldLeft = new SubField(0, 2);
+				var keyboardLeft = new Keyboard([87, 65, 68]);
+				var playerLeft = new Player(game, fieldLeft, keyboardLeft);
+				playerLeft.setIdentity('Lefty', '#0000FF');
+				game.addPlayer(playerLeft);
+
+				// Create right player
+				var fieldRight = new SubField(1, 2);
+				var keyboardRight = new Keyboard([38, 37, 39]);
+				var playerRight = new Player(game, fieldRight, keyboardRight);
+				playerRight.setIdentity('Righto', '#FF0000');
+				game.addPlayer(playerRight);
+
+				// Start game
+				game.beginMatch();
+			}, 100);
+
+		})();
+	</script>
+</body>
+
+</html>
