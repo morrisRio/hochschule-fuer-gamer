@@ -1,141 +1,220 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
+        <head>
+                <meta charset="utf-8" />
+                <title>Ultimate Volley</title>
+                <link rel="stylesheet" href="style/controller.css" />
+        </head>
 
-<head>
-    <meta charset="utf-8" />
-    <title>Ultimate Volley</title>
-    <link rel="stylesheet" href="Content/style.css" />
-</head>
-
-<style>
-    * {
-        padding: 0;
-        margin: 0;
-    }
-
-    body {
-        width: 100vw;
-        height: 100vh;
-    }
-
-    .controller {
-        display: flex;
-        height: 100%;
-        width: 100%;
-    }
-
-    .controller div {
-        width: 33.33333%;
-        height: 100%;
-    }
-
-    .controller .l,
-    .controller .r {
-        background-color: #aaaaaa;
-    }
-
-    .controller .j {
-        background-color: #356e32;
-    }
-</style>
-
-<body>
-    <div class="controller">
-        <div class="l"></div>
-        <div class="j"></div>
-        <div class="r"></div>
-    </div>
-
-    <script async defer>
-        (function () {
-            // Create new game
-            let socket = new WebSocket("ws://localhost:8080");
-            socket.onopen = function (e) {
-                console.log("[open] Connection established");
-                console.log("Sending to server");
-                socket.send("My name is John");
-            };
-
-            socket.onmessage = function (event) {
-                console.log(`[message] Data received from server: ${event.data}`);
-            };
-
-            const leftButton = document.querySelector('div.l');
-            const rightButton = document.querySelector('div.r');
-            const jumpButton = document.querySelector('div.j');
-
-            let timerID;
-            let counter = 0;
-
-            let pressHoldEvent = new CustomEvent("pressHold");
-
-            // Increase or decreae value to adjust how long
-            // one should keep pressing down before the pressHold
-            // event fires
-            let pressHoldDuration = 50;
-
-            // Listening for the mouse and touch events    
-            leftButton.addEventListener("mousedown", pressingDown, false);
-            leftButton.addEventListener("mouseup", notPressingDown, false);
-            leftButton.addEventListener("mouseleave", notPressingDown, false);
-            leftButton.addEventListener("touchstart", pressingDown, false);
-            leftButton.addEventListener("touchend", notPressingDown, false);
-            // leftButton.addEventListener("pressHold", doSomething, false);
-
-            rightButton.addEventListener("mousedown", pressingDown, false);
-            rightButton.addEventListener("mouseup", notPressingDown, false);
-            rightButton.addEventListener("mouseleave", notPressingDown, false);
-            rightButton.addEventListener("touchstart", pressingDown, false);
-            rightButton.addEventListener("touchend", notPressingDown, false);
-            // rightButton.addEventListener("pressHold", doSomething, false);
-
-            jumpButton.addEventListener("mousedown", pressingDown, false);
-            jumpButton.addEventListener("mouseup", notPressingDown, false);
-            jumpButton.addEventListener("mouseleave", notPressingDown, false);
-            jumpButton.addEventListener("touchstart", pressingDown, false);
-            jumpButton.addEventListener("touchend", notPressingDown, false);
-            // jumpButton.addEventListener("pressHold", doSomething, false);
-
-
-            function pressingDown(e) {
-                // console.log(e);
-                let button = e.target.classList[0]
-                socket.send(`${button}1`);
-                console.log(`${button}1`);
-                requestAnimationFrame(function () {
-                    timer(button)
-                })
-                e.preventDefault();
-            }
-
-            function notPressingDown(e) {
-                let button = e.target.classList[0]
-                socket.send(`${button}0`);
-                console.log(`${button}0`);
-
-                leftButton.dispatchEvent(pressHoldEvent);
-                cancelAnimationFrame(timerID);
-                counter = 0;
-            }
-            function timer(button) {
-                // socket.send(button);
-
-                if (counter < pressHoldDuration) {
-                    timerID = requestAnimationFrame(function () {
-                        timer(button)
-                    })
+        <style>
+                * {
+                        padding: 0;
+                        margin: 0;
                 }
-            }
 
-            // function doSomething(e) {
-            //     console.log("pressHold event fired!");
-            // }
+                body {
+                        width: 100vw;
+                        height: 100vh;
+                }
+        </style>
 
+        <body>
+                <div class="container">
+                        <div class="controller">
+                                <div class="lr">
+                                        <button class="l push"></button>
+                                        <div class="mid">
+                                                <div class="nav">
+                                                        <h3>Ultimate Volley</h3>
+                                                        <a
+                                                                href="/impressum.html"
+                                                        >
+                                                                Impressum
+                                                        </a>
+                                                </div>
+                                                <div class="screen">
+                                                        <div class="name">
+                                                                Name
+                                                        </div>
+                                                        <div>
+                                                                <span
+                                                                        >SCORE:
+                                                                </span>
+                                                                <div
+                                                                        class="points"
+                                                                >
+                                                                        0
+                                                                </div>
+                                                        </div>
+                                                </div>
+                                        </div>
 
+                                        <button class="r push"></button>
+                                </div>
 
+                                <button class="j push-big"></button>
+                        </div>
+                </div>
 
-        })();
-    </script>
-</body>
+                <script async defer>
+                        (function () {
+                                // Create new game
+                                let socket = new WebSocket(
+                                        'ws://localhost:8080'
+                                );
+                                socket.onopen = function (e) {
+                                        console.log(
+                                                '[open] Connection established'
+                                        );
+                                        console.log('Sending to server');
+                                        socket.send('My name is John');
+                                };
 
+                                socket.onmessage = function (event) {
+                                        console.log(
+                                                `[message] Data received from server: ${event.data}`
+                                        );
+                                };
+
+                                const leftButton =
+                                        document.querySelector('button.l');
+                                const rightButton =
+                                        document.querySelector('button.r');
+                                const jumpButton =
+                                        document.querySelector('button.j');
+
+                                let timerID;
+                                let counter = 0;
+
+                                let pressHoldEvent = new CustomEvent(
+                                        'pressHold'
+                                );
+
+                                // Increase or decreae value to adjust how long
+                                // one should keep pressing down before the pressHold
+                                // event fires
+                                let pressHoldDuration = 50;
+
+                                // Listening for the mouse and touch events
+                                leftButton.addEventListener(
+                                        'mousedown',
+                                        pressingDown,
+                                        false
+                                );
+                                leftButton.addEventListener(
+                                        'mouseup',
+                                        notPressingDown,
+                                        false
+                                );
+                                leftButton.addEventListener(
+                                        'mouseleave',
+                                        notPressingDown,
+                                        false
+                                );
+                                leftButton.addEventListener(
+                                        'touchstart',
+                                        pressingDown,
+                                        false
+                                );
+                                leftButton.addEventListener(
+                                        'touchend',
+                                        notPressingDown,
+                                        false
+                                );
+                                // leftButton.addEventListener("pressHold", doSomething, false);
+
+                                rightButton.addEventListener(
+                                        'mousedown',
+                                        pressingDown,
+                                        false
+                                );
+                                rightButton.addEventListener(
+                                        'mouseup',
+                                        notPressingDown,
+                                        false
+                                );
+                                rightButton.addEventListener(
+                                        'mouseleave',
+                                        notPressingDown,
+                                        false
+                                );
+                                rightButton.addEventListener(
+                                        'touchstart',
+                                        pressingDown,
+                                        false
+                                );
+                                rightButton.addEventListener(
+                                        'touchend',
+                                        notPressingDown,
+                                        false
+                                );
+                                // rightButton.addEventListener("pressHold", doSomething, false);
+
+                                jumpButton.addEventListener(
+                                        'mousedown',
+                                        pressingDown,
+                                        false
+                                );
+                                jumpButton.addEventListener(
+                                        'mouseup',
+                                        notPressingDown,
+                                        false
+                                );
+                                jumpButton.addEventListener(
+                                        'mouseleave',
+                                        notPressingDown,
+                                        false
+                                );
+                                jumpButton.addEventListener(
+                                        'touchstart',
+                                        pressingDown,
+                                        false
+                                );
+                                jumpButton.addEventListener(
+                                        'touchend',
+                                        notPressingDown,
+                                        false
+                                );
+                                // jumpButton.addEventListener("pressHold", doSomething, false);
+
+                                function pressingDown(e) {
+                                        // console.log(e);
+                                        let button = e.target.classList[0];
+                                        socket.send(`${button}1`);
+                                        console.log(`${button}1`);
+                                        requestAnimationFrame(function () {
+                                                timer(button);
+                                        });
+                                        e.preventDefault();
+                                }
+
+                                function notPressingDown(e) {
+                                        let button = e.target.classList[0];
+                                        socket.send(`${button}0`);
+                                        console.log(`${button}0`);
+
+                                        leftButton.dispatchEvent(
+                                                pressHoldEvent
+                                        );
+                                        cancelAnimationFrame(timerID);
+                                        counter = 0;
+                                }
+                                function timer(button) {
+                                        // socket.send(button);
+
+                                        if (counter < pressHoldDuration) {
+                                                timerID = requestAnimationFrame(
+                                                        function () {
+                                                                timer(button);
+                                                        }
+                                                );
+                                        }
+                                }
+
+                                // function doSomething(e) {
+                                //     console.log("pressHold event fired!");
+                                // }
+                        })();
+                </script>
+        </body>
 </html>

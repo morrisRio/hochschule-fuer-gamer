@@ -1,0 +1,180 @@
+@font-face {
+        font-family: 'rubik-medium';
+        src: url('./fonts/Rubik-Medium.woff') format('woff'),
+                url('./fonts/Rubik-Medium.woff2') format('woff2');
+}
+
+@font-face {
+        font-family: 'pixel';
+        src: url('./fonts/LLPixel.woff') format('woff'),
+                url('./fonts/LLPixel.woff2') format('woff2'),
+                url('./fonts/LLPixel.ttf') format('truetype'),
+                url('./fonts/LLPixel.eot') format('embedded-opentype');
+}
+@font-face {
+        font-family: 'lcd';
+        src: url('./fonts/LCDMono2Normal.woff') format('woff'),
+                url('./fonts/LCDMono2Normal.woff2') format('woff2'),
+                url('./fonts/LCDMono2Normal.ttf') format('truetype'),
+                url('./fonts/LCDMono2Normal.eot') format('embedded-opentype');
+}
+
+$bg: #89e0e6;
+$push-color: #ead060;
+$push-color-big: #f8a8a6;
+
+$push-size: 42vh;
+$push-size-big: 90vw;
+
+$lcd-color: #b7ce88;
+
+body {
+        margin: 0px;
+        background: $bg;
+        color: #ccc;
+}
+.container {
+        font-family: 'rubik-medium', sans-serif;
+        color: white;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        width: 100%;
+        justify-content: center;
+        align-items: center;
+}
+
+.controller {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        gap: 24px;
+}
+
+.lr {
+        display: flex;
+        justify-content: space-between;
+        height: $push-size;
+        gap: 16px;
+        width: 100%;
+}
+a {
+        text-decoration: none;
+        color: darken($bg, 40%);
+}
+
+.nav {
+        display: flex;
+        justify-content: space-between;
+        font-size: 1em;
+}
+.lr .mid {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        flex: 2 2 auto;
+}
+.screen {
+        display: flex;
+        height: $push-size * 0.85;
+        font-family: 'pixel', sans-serif;
+        font-size: 2em;
+        color: darken($lcd-color, 48%);
+        flex-direction: column;
+        justify-content: center;
+        border-radius: 16px;
+        box-shadow: inset 2px 3px darken($bg, 20%),
+                inset -2px -4px lighten($bg, 5%),
+                inset 4px 8px 4px rgba(0, 0, 0, 0.2);
+        gap: 16px;
+        background-color: $lcd-color;
+        text-align: center;
+}
+
+.push {
+        position: relative;
+        display: inline-block;
+        width: $push-size;
+        height: $push-size;
+        border: 0;
+        outline: none;
+        background-color: $push-color;
+        border-radius: 50%;
+        cursor: pointer;
+        transition: box-shadow 10ms;
+        box-shadow: inset 0 $push-size/32 0 lighten($push-color, 5%),
+                inset 0 (-$push-size/32) 0 darken($push-color, 5%),
+                inset 0 0 0 $push-size/32 darken($push-color, 3%),
+                inset 0 0 0 $push-size/12 $push-color,
+                inset 0 0 0 $push-size/10 darken($push-color, 20%),
+                inset 0 0 0 $push-size/9.2 darken($push-color, 50%),
+                inset 0 0 0 $push-size/7.5
+                        transparentize(lighten($push-color, 30%), 0.3),
+                inset 0 0 0 $push-size/5.5 $push-color,
+                inset 0 $push-size/2.5 $push-size/7.5 darken($push-color, 5%),
+                inset 0 0 $push-size/10 $push-size/6 darken($push-color, 10%),
+                0 $push-size/20 0 rgba(0, 0, 0, 0.3);
+
+        &:active,
+        &.is-pushed {
+                box-shadow: inset 0 $push-size/32 0 lighten($push-color, 5%),
+                        inset 0 (-$push-size/32) 0 darken($push-color, 5%),
+                        inset 0 0 0 $push-size/32 darken($push-color, 3%),
+                        inset 0 0 0 $push-size/12 $push-color,
+                        inset 0 0 0 $push-size/10 darken($push-color, 20%),
+                        inset 0 0 0 $push-size/8.5 darken($push-color, 40%),
+                        inset 0 0 0 $push-size/7.5
+                                transparentize(lighten($push-color, 30%), 0.8),
+                        inset 0 0 0 $push-size/5.5 darken($push-color, 3%),
+                        inset 0 $push-size/2.5 $push-size/7.5
+                                darken($push-color, 8%),
+                        inset 0 0 $push-size/10 $push-size/6
+                                darken($push-color, 15%),
+                        0 $push-size/20 0 rgba(0, 0, 0, 0.3);
+                background-color: darken($push-color, 2%);
+        }
+}
+
+.push-big {
+        background-color: $push-color-big;
+        height: $push-size;
+        width: $push-size-big;
+        border-radius: 8rem;
+
+        box-shadow: inset 0 $push-size/32 0 lighten($push-color-big, 5%),
+                inset 0 (-$push-size/32) 0 darken($push-color-big, 5%),
+                inset 0 0 0 $push-size/32 darken($push-color-big, 3%),
+                inset 0 0 0 $push-size/12 $push-color-big,
+                inset 0 0 0 $push-size/10 darken($push-color-big, 20%),
+                inset 0 0 0 $push-size/9.2 darken($push-color-big, 50%),
+                inset 0 0 0 $push-size/7.5
+                        transparentize(lighten($push-color-big, 30%), 0.3),
+                inset 0 0 0 $push-size/5.5 $push-color-big,
+                inset 0 $push-size/2.5 $push-size/7.5
+                        darken($push-color-big, 5%),
+                inset 0 0 $push-size/10 $push-size/6
+                        darken($push-color-big, 10%),
+                0 $push-size/20 0 rgba(0, 0, 0, 0.3);
+
+        &:active,
+        &.is-pushed {
+                box-shadow: inset 0 $push-size/32 0 lighten($push-color-big, 5%),
+                        inset 0 (-$push-size/32) 0 darken($push-color-big, 5%),
+                        inset 0 0 0 $push-size/32 darken($push-color-big, 3%),
+                        inset 0 0 0 $push-size/12 $push-color-big,
+                        inset 0 0 0 $push-size/10 darken($push-color-big, 20%),
+                        inset 0 0 0 $push-size/8.5 darken($push-color-big, 40%),
+                        inset 0 0 0 $push-size/7.5
+                                transparentize(
+                                        lighten($push-color-big, 30%),
+                                        0.8
+                                ),
+                        inset 0 0 0 $push-size/5.5 darken($push-color-big, 3%),
+                        inset 0 $push-size/2.5 $push-size/7.5
+                                darken($push-color-big, 8%),
+                        inset 0 0 $push-size/10 $push-size/6
+                                darken($push-color-big, 15%),
+                        0 $push-size/20 0 rgba(0, 0, 0, 0.3);
+                background-color: darken($push-color-big, 2%);
+        }
+}
