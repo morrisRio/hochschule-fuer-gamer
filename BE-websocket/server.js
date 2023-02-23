@@ -32,7 +32,7 @@ io.on("connection", (socket) => {
         socket.fe = 1;
         socketFE1 = socket;
     });
-  });
+
 
     socket.on("waitingList", (msg) => {
         let freeSlot = checkFreeSlot()
@@ -66,8 +66,8 @@ httpServer.listen(PORT, () => {
 });
 
 var isWsClientInGame = (socket) => {
-    if(waitingList.l.ip === socket.ip) return true
-    else if(waitingList.r.ip === socket.ip) return true
+    if (waitingList.l.ip === socket.ip) return true
+    else if (waitingList.r.ip === socket.ip) return true
     else return false
     // return waitingList.some((waitingListClient) => waitingListClient.ip === socket.ip)
 }
@@ -79,6 +79,6 @@ var checkFreeSlot = () => {
         return "l";
     else if (JSON.stringify(waitingList.r) === '{}')
         return "r";
-    else 
+    else
         return false
 }
