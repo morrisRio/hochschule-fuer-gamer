@@ -1,212 +1,140 @@
 <!DOCTYPE html>
 <html lang="en">
-        <head>
-                <meta charset="utf-8" />
-                <title>Ultimate Volley</title>
-                <link rel="stylesheet" href="style/controller.css" />
-                <script src="socket.io.min.js"></script>
-        </head>
+
+<head>
+    <meta charset="utf-8" />
+    <title>Ultimate Volley</title>
+    <link rel="stylesheet" href="style/controller.css" />
+    <script src="socket.io.min.js"></script>
+</head>
 
 
-
-
-        <body>
-                <div class="container">
-                        <div class="controller">
-                                <div class="lr">
-                                        <button class="l push"></button>
-                                        <div class="mid">
-                                                <div class="nav">
-                                                        <h3>Ultimate Volley</h3>
-                                                        <a
-                                                                href="/impressum.html"
-                                                        >
-                                                                Impressum
-                                                        </a>
-                                                </div>
-                                                <div class="screen">
-                                                        <div class="name">
-                                                                Name
-                                                        </div>
-                                                        <div>
-                                                                <span
-                                                                        >SCORE:
-                                                                </span>
-                                                                <div
-                                                                        class="points"
-                                                                >
-                                                                        0
-                                                                </div>
-                                                        </div>
-                                                </div>
-                                        </div>
-
-                                        <button class="r push"></button>
-                                </div>
-
-                                <button class="j push-big"></button>
+<body>
+    <div class="container">
+        <div class="controller">
+            <div class="lr">
+                <button class="l push"></button>
+                <div class="mid">
+                    <div class="nav">
+                        <h3>Ultimate Volley</h3>
+                        <a href="/impressum.html">
+                            Impressum
+                        </a>
+                    </div>
+                    <div class="screen">
+                        <div class="name">
+                            Name
                         </div>
+                        <div>
+                            <span>SCORE:
+                            </span>
+                            <div class="points">
+                                0
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
-                <script async defer>
-                        (function () {
-                                // Create new game
-                                let socket = new WebSocket(
-                                        'ws://localhost:8080'
-                                );
-                                socket.onopen = function (e) {
-                                        console.log(
-                                                '[open] Connection established'
-                                        );
-                                        console.log('Sending to server');
-                                        socket.send('My name is John');
-                                };
+                <button class="r push"></button>
+            </div>
 
-                                socket.onmessage = function (event) {
-                                        console.log(
-                                                `[message] Data received from server: ${event.data}`
-                                        );
-                                };
+            <button class="j push-big"></button>
+        </div>
+    </div>
 
-                                const leftButton =
-                                        document.querySelector('button.l');
-                                const rightButton =
-                                        document.querySelector('button.r');
-                                const jumpButton =
-                                        document.querySelector('button.j');
+    <script async defer>
 
-                                let timerID;
-                                let counter = 0;
+        (function () {
 
-                                let pressHoldEvent = new CustomEvent(
-                                        'pressHold'
-                                );
+            // Create new game
+            let socket = io("https://hfg-gamer-backend.fly.dev");
 
-                                // Increase or decreae value to adjust how long
-                                // one should keep pressing down before the pressHold
-                                // event fires
-                                let pressHoldDuration = 50;
+            // const socket = io('192.168.178.142:8080');
 
-                                // Listening for the mouse and touch events
-                                leftButton.addEventListener(
-                                        'mousedown',
-                                        pressingDown,
-                                        false
-                                );
-                                leftButton.addEventListener(
-                                        'mouseup',
-                                        notPressingDown,
-                                        false
-                                );
-                                leftButton.addEventListener(
-                                        'mouseleave',
-                                        notPressingDown,
-                                        false
-                                );
-                                leftButton.addEventListener(
-                                        'touchstart',
-                                        pressingDown,
-                                        false
-                                );
-                                leftButton.addEventListener(
-                                        'touchend',
-                                        notPressingDown,
-                                        false
-                                );
-                                // leftButton.addEventListener("pressHold", doSomething, false);
+            socket.on('connected', function (msg) {
+                console.log(msg);
+                socket.emit('waitingList')
+            });
 
-                                rightButton.addEventListener(
-                                        'mousedown',
-                                        pressingDown,
-                                        false
-                                );
-                                rightButton.addEventListener(
-                                        'mouseup',
-                                        notPressingDown,
-                                        false
-                                );
-                                rightButton.addEventListener(
-                                        'mouseleave',
-                                        notPressingDown,
-                                        false
-                                );
-                                rightButton.addEventListener(
-                                        'touchstart',
-                                        pressingDown,
-                                        false
-                                );
-                                rightButton.addEventListener(
-                                        'touchend',
-                                        notPressingDown,
-                                        false
-                                );
-                                // rightButton.addEventListener("pressHold", doSomething, false);
+            const leftButton = document.querySelector('button.l');
+            const rightButton = document.querySelector('button.r');
+            const jumpButton = document.querySelector('button.j');
 
-                                jumpButton.addEventListener(
-                                        'mousedown',
-                                        pressingDown,
-                                        false
-                                );
-                                jumpButton.addEventListener(
-                                        'mouseup',
-                                        notPressingDown,
-                                        false
-                                );
-                                jumpButton.addEventListener(
-                                        'mouseleave',
-                                        notPressingDown,
-                                        false
-                                );
-                                jumpButton.addEventListener(
-                                        'touchstart',
-                                        pressingDown,
-                                        false
-                                );
-                                jumpButton.addEventListener(
-                                        'touchend',
-                                        notPressingDown,
-                                        false
-                                );
-                                // jumpButton.addEventListener("pressHold", doSomething, false);
+            let timerID;
+            let counter = 0;
 
-                                function pressingDown(e) {
-                                        // console.log(e);
-                                        let button = e.target.classList[0];
-                                        socket.send(`${button}1`);
-                                        console.log(`${button}1`);
-                                        requestAnimationFrame(function () {
-                                                timer(button);
-                                        });
-                                        e.preventDefault();
-                                }
+            let pressHoldEvent = new CustomEvent("pressHold");
 
-                                function notPressingDown(e) {
-                                        let button = e.target.classList[0];
-                                        socket.send(`${button}0`);
-                                        console.log(`${button}0`);
+            // Increase or decreae value to adjust how long
+            // one should keep pressing down before the pressHold
+            // event fires
+            let pressHoldDuration = 50;
 
-                                        leftButton.dispatchEvent(
-                                                pressHoldEvent
-                                        );
-                                        cancelAnimationFrame(timerID);
-                                        counter = 0;
-                                }
-                                function timer(button) {
-                                        // socket.send(button);
+            // Listening for the mouse and touch events    
+            leftButton.addEventListener("mousedown", pressingDown, false);
+            leftButton.addEventListener("mouseup", notPressingDown, false);
+            // leftButton.addEventListener("mouseleave", notPressingDown, false); 
+            leftButton.addEventListener("touchstart", pressingDown, false);
+            leftButton.addEventListener("touchend", notPressingDown, false);
+            // leftButton.addEventListener("pressHold", doSomething, false);
 
-                                        if (counter < pressHoldDuration) {
-                                                timerID = requestAnimationFrame(
-                                                        function () {
-                                                                timer(button);
-                                                        }
-                                                );
-                                        }
-                                }
+            rightButton.addEventListener("mousedown", pressingDown, false);
+            rightButton.addEventListener("mouseup", notPressingDown, false);
+            // rightButton.addEventListener("mouseleave", notPressingDown, false);
+            rightButton.addEventListener("touchstart", pressingDown, false);
+            rightButton.addEventListener("touchend", notPressingDown, false);
+            // rightButton.addEventListener("pressHold", doSomething, false);
 
-                                // function doSomething(e) {
-                                //     console.log("pressHold event fired!");
-                                // }
-                        })();
-                </script>
-        </body>
+            jumpButton.addEventListener("mousedown", pressingDown, false);
+            jumpButton.addEventListener("mouseup", notPressingDown, false);
+            // jumpButton.addEventListener("mouseleave", notPressingDown, false);
+            jumpButton.addEventListener("touchstart", pressingDown, false);
+            jumpButton.addEventListener("touchend", notPressingDown, false);
+            // jumpButton.addEventListener("pressHold", doSomething, false);
+
+
+            function pressingDown(e) {
+                console.log("press");
+                let button = e.target.classList[0]
+                socket.emit('interaction', `${button}1`);
+                // socket.send(``);
+                // console.log(`${button}1`);
+                requestAnimationFrame(function () {
+                    timer(button)
+                })
+                e.preventDefault();
+            }
+
+            function notPressingDown(e) {
+                let button = e.target.classList[0]
+                // socket.send(`${button}0`);
+                socket.emit('interaction', `${button}0`);
+
+                // console.log(`${button}0`);
+
+                leftButton.dispatchEvent(pressHoldEvent);
+                cancelAnimationFrame(timerID);
+                counter = 0;
+            }
+            function timer(button) {
+                // socket.send(`${button}1`);
+
+                if (counter < pressHoldDuration) {
+                    timerID = requestAnimationFrame(function () {
+                        timer(button)
+                    })
+                }
+            }
+
+            // function doSomething(e) {
+            //     console.log("pressHold event fired!");
+            // }
+
+
+
+
+        })();
+    </script>
+</body>
+
 </html>
