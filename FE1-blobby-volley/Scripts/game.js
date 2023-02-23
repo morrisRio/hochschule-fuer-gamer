@@ -1,4 +1,4 @@
-let socket = new WebSocket("wss://hfg-gamer-backend.fly.dev");
+let socket = io("https://hfg-gamer-backend.fly.dev");
 // const socket = io('192.168.178.142:8080');
 
 socket.on('connected', function (msg) {
