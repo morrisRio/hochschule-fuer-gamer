@@ -1,9 +1,10 @@
 let socket = new WebSocket("wss://hfg-gamer-backend.fly.dev");
+// const socket = io('192.168.178.142:8080');
 
-socket.onopen = function (e) {
-	console.log("[open] Connection established");
-	socket.send("My name is FE1");
-};
+socket.on('connected', function (msg) {
+	console.log(msg);
+	socket.emit('connectFE1')
+});
 
 // socket.onmessage = function (event) {
 // 	console.log(event.data);
@@ -689,7 +690,6 @@ var Player = Figure.extend({
 	},
 	updatePulse: function () {
 		this.pulses.push(this.pulse);
-
 		if (this.pulses.length > 100)
 			this.pulses.shift();
 	},
@@ -698,7 +698,6 @@ var Player = Figure.extend({
 		this.updatePulse();
 	},
 	logic: function () {
-		
 		if (this.input.left) {
 			this.vx = -this.pulse * MAX_SPEED;
 			this.pulse -= PULSE_RUN_DECREASE;
@@ -712,9 +711,6 @@ var Player = Figure.extend({
 			this.vy = MAX_JUMP + ACCELERATION;
 			this.pulse -= PULSE_JUMP_DECREASE;
 		}
-
-		if(this.input.up)
-			console.log(this.input.up);
 
 		this.pulse = Math.max(Math.min(1, this.pulse + PULSE_RECOVERY), 0.5);
 		this._super();
@@ -816,6 +812,7 @@ var Control = VirtualObject.extend({
 		this._super();
 	},
 	update: function () {
+		// console.log('update', this.bufferUp);
 		this.previousUp = this.up;
 		this.previousLeft = this.left;
 		this.previousRight = this.right;
@@ -835,6 +832,7 @@ var Control = VirtualObject.extend({
 		this.previousRight = false;
 	},
 	setUp: function (on) {
+		// console.log('setUp', on);
 		this.bufferUp = on;
 	},
 	setLeft: function (on) {
@@ -910,7 +908,6 @@ var Keyboard = Control.extend({
 	},
 	handler: function (e, status) {
 		if (this.codes[e.keyCode]) {
-			// console.log(e);
 			(this.codes[e.keyCode]).apply(this, [status]);
 			// this.cancelBubble(e);
 			return false;
@@ -934,15 +931,18 @@ var Websocket = Control.extend({
 
 
 		var handleEvent = false;
-		this.websocketHandler = function (event) {
-			let handlerState = event.data.charAt(2);
-			let setDirection = event.data.slice(0, -1);
-			// console.log(handlerState, setDirection);
+		this.websocketHandler = function (data) {
+			
+			let handlerState = data.charAt(2);
+			let setDirection = data.slice(0, -1);
 			if (handlerState == 1) {
 				handleEvent = me.handler(setDirection, true);
 			}
 			else {
-				handleEvent = me.handler(setDirection, false);
+				setTimeout(() => {
+					handleEvent = me.handler(setDirection, false);
+				}, 50);
+
 			}
 
 			return handleEvent;
@@ -950,7 +950,14 @@ var Websocket = Control.extend({
 	},
 	bind: function () {
 
-		socket.addEventListener('message', this.websocketHandler);
+		socket.on('interaction', (data) => {
+			console.log(data);
+			this.websocketHandler(data)
+		})
+
+		// socket.on('interaction', this.websocketHandler);
+
+		// socket.addEventListener('message', this.websocketHandler);
 
 		// document.addEventListener('keydown', this.downhandler, false);
 		// document.addEventListener('keyup', this.uphandler, false);
@@ -965,7 +972,7 @@ var Websocket = Control.extend({
 	},
 	handler: function (direction, status) {
 		if (this.codes[direction]) {
-			// console.log(direction, status);
+			// console.log('websocket', status);
 			(this.codes[direction]).apply(this, [status]);
 			// this.cancelBubble(e);
 			return false;
@@ -1118,10 +1125,13 @@ var Game = VirtualObject.extend({
 		}
 
 		this.wait = Math.ceil(POINT_BREAK_TIME / LOGIC_STEP);
+		// console.log("setServe", this.wait);
 		this.continuation();
 	},
 	tick: function () {
+		// console.log("tick");
 		if (!this.wait) {
+
 			for (var i = this.players.length; i--;)
 				this.players[i].steer();
 
@@ -1169,9 +1179,28 @@ var Game = VirtualObject.extend({
 			for (var i = this.players.length; i--;)
 				this.players[i].input.bind();
 
-			me.loop = setInterval(function () {
-				me.tick();
-			}, LOGIC_STEP);
+			var fps = 30;
+			var interval = 1000 / fps;
+			var then;
+			function draw(timestamp) {
+
+				requestAnimationFrame(draw);
+				if (then === undefined) {
+					then = timestamp;
+				}
+
+				const delta = timestamp - then;
+				if (delta > interval) {
+					me.tick();
+					then = timestamp - (delta % interval);
+				}
+			}
+			draw();
+
+			// me.loop = setInterval(function () {
+			// 	// console.log("tick");
+			// 	me.tick();
+			// }, LOGIC_STEP);
 		}
 	},
 	pause: function () {

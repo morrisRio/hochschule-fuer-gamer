@@ -5,6 +5,7 @@
     <meta charset="utf-8" />
     <title>Ultimate Volley</title>
     <link rel="stylesheet" href="Content/style.css" />
+    <script src="socket.io.min.js"></script>
 </head>
 
 <style>
@@ -47,18 +48,18 @@
     </div>
 
     <script async defer>
+
         (function () {
+
             // Create new game
             let socket = new WebSocket("wss://hfg-gamer-backend.fly.dev");
-            socket.onopen = function (e) {
-                console.log("[open] Connection established");
-                console.log("Sending to server");
-                socket.send("My name is John");
-            };
 
-            socket.onmessage = function (event) {
-                console.log(`[message] Data received from server: ${event.data}`);
-            };
+            // const socket = io('192.168.178.142:8080');
+
+            socket.on('connected', function (msg) {
+                console.log(msg);
+                socket.emit('waitingList')
+            });
 
             const leftButton = document.querySelector('div.l');
             const rightButton = document.querySelector('div.r');
@@ -98,10 +99,11 @@
 
 
             function pressingDown(e) {
-                // console.log(e);
+                console.log("press");
                 let button = e.target.classList[0]
-                socket.send(`${button}1`);
-                console.log(`${button}1`);
+                socket.emit('interaction', `${button}1`);
+                // socket.send(``);
+                // console.log(`${button}1`);
                 requestAnimationFrame(function () {
                     timer(button)
                 })
@@ -110,15 +112,17 @@
 
             function notPressingDown(e) {
                 let button = e.target.classList[0]
-                socket.send(`${button}0`);
-                console.log(`${button}0`);
+                // socket.send(`${button}0`);
+                socket.emit('interaction', `${button}0`);
+
+                // console.log(`${button}0`);
 
                 leftButton.dispatchEvent(pressHoldEvent);
                 cancelAnimationFrame(timerID);
                 counter = 0;
             }
             function timer(button) {
-                // socket.send(button);
+                // socket.send(`${button}1`);
 
                 if (counter < pressHoldDuration) {
                     timerID = requestAnimationFrame(function () {
